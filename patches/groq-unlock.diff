@@ -1,3 +1,28 @@
-(сюда ПОЛНОСТЬЮ вставь diff-патч из моего предыдущего ответа,
-начиная со строки   diff --git a/internal/provider/openai/client.go … 
-и до самого конца “# EOF”) 
+diff --git a/internal/llm/provider/openai.go b/internal/llm/provider/openai.go
+index 8ce8bcd..c6a4f32 100644
+--- a/internal/llm/provider/openai.go
++++ b/internal/llm/provider/openai.go
+@@
+-import "github.com/sashabaranov/go-openai"
++import (
++    "os"
++    "github.com/sashabaranov/go-openai"
++)
+ 
+ func New(apiKey string) *openai.Client {
+-    return openai.NewClient(apiKey)
++    if base := os.Getenv("OPENAI_API_BASE"); base != "" {
++        cfg := openai.DefaultConfig(apiKey)
++        cfg.BaseURL = base
++        return openai.NewClientWithConfig(cfg)
++    }
++    return openai.NewClient(apiKey)
+ }
+diff --git a/cmd/root.go b/cmd/root.go
+index 5e49c7a..3f0a9d1 100644
+--- a/cmd/root.go
++++ b/cmd/root.go
+@@
+-    model := cmd.Flags().StringP("model", "m", "", "override model")
++    defModel := os.Getenv("OPENCODE_MODEL")
++    model := cmd.Flags().StringP("model", "m", defModel, "override model")
